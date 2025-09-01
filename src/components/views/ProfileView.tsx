@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ArrowLeft, User, Mail, Phone, Calendar, Gift, Settings, Shield, HelpCircle } from 'lucide-react';
+import { ArrowLeft, User, Mail, Phone, Calendar, Gift, Settings, Shield, HelpCircle, Copy, Share2 } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { useBalance } from '../../contexts/BalanceContext';
 
@@ -40,6 +40,32 @@ export default function ProfileView({ onBack }: ProfileViewProps) {
       case 'referral':
         setShowSettings(true);
         break;
+    }
+  };
+
+  const copyToClipboard = async () => {
+    try {
+      await navigator.clipboard.writeText(user?.referralCode || '');
+      alert('Code copié!');
+    } catch (err) {
+      console.error('Failed to copy:', err);
+    }
+  };
+
+  const shareLink = async () => {
+    const referralLink = `https://cashflowa.com/register?ref=${user?.referralCode}`;
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: 'CashFlowa - Investissement',
+          text: 'Rejoignez-moi sur cette plateforme d\'investissement et gagnez ensemble !',
+          url: referralLink,
+        });
+      } catch (err) {
+        console.error('Failed to share:', err);
+      }
+    } else {
+      copyToClipboard();
     }
   };
 

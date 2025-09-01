@@ -165,7 +165,19 @@ export function AuthProvider({ children }: AuthProviderProps) {
             .single();
 
           if (referrer) {
-            await supabase.rpc('increment_referral_count', { user_id: referrer.id });
+            // Update referrer's referral count
+            const { data: referrerBalance } = await supabase
+              .from('balances')
+              .select('referral_count')
+              .eq('user_id', referrer.id)
+              .single();
+
+            if (referrerBalance) {
+              await supabase
+                .from('balances')
+                .update({ referral_count: referrerBalance.referral_count + 1 })
+                .eq('user_id', referrer.id);
+            }
           }
         }
 

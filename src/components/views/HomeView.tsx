@@ -1,5 +1,5 @@
 import React from 'react';
-import { TrendingUp, DollarSign, Users, Award, ArrowUpRight, ArrowDownLeft, Download, Building } from 'lucide-react';
+import { TrendingUp, DollarSign, Users, Award, ArrowUpRight, ArrowDownLeft, Download, Building, Shield } from 'lucide-react';
 import { useBalance } from '../../contexts/BalanceContext';
 import { useAuth } from '../../contexts/AuthContext';
 

@@ -12,7 +12,7 @@ export default function ReferralView({ onBack }: ReferralViewProps) {
   const { referralCount, earnings } = useBalance();
   const [copied, setCopied] = useState(false);
 
-  const referralLink = `https://hebutt88.com/register?ref=${user?.referralCode}`;
+  const referralLink = `https://cashflowa.com/register?ref=${user?.referralCode}`;
 
   const copyToClipboard = async () => {
     try {
@@ -28,7 +28,7 @@ export default function ReferralView({ onBack }: ReferralViewProps) {
     if (navigator.share) {
       try {
         await navigator.share({
-          title: 'H.E. Butt Grocery - Investissement',
+          title: 'CashFlowa - Investissement',
           text: 'Rejoignez-moi sur cette plateforme d\'investissement et gagnez ensemble !',
           url: referralLink,
         });
