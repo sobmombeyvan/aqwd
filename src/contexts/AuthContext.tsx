@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { supabase } from '../lib/supabase';
+import { supabase, isSupabaseConfigured } from '../lib/supabase';
 import type { User as SupabaseUser } from '@supabase/supabase-js';
 
 interface User {
@@ -41,6 +41,12 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
+    // If Supabase is not configured, set loading to false immediately
+    if (!isSupabaseConfigured()) {
+      setLoading(false);
+      return;
+    }
+
     // Get initial session
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (session?.user) {
@@ -48,6 +54,9 @@ export function AuthProvider({ children }: AuthProviderProps) {
       } else {
         setLoading(false);
       }
+    }).catch((error) => {
+      console.error('Error getting session:', error);
+      setLoading(false);
     });
 
     // Listen for auth changes
@@ -99,6 +108,10 @@ export function AuthProvider({ children }: AuthProviderProps) {
   };
 
   const login = async (email: string, password: string) => {
+    if (!isSupabaseConfigured()) {
+      throw new Error('Supabase n\'est pas configuré. Veuillez connecter Supabase.');
+    }
+
     setLoading(true);
     try {
       const { data, error } = await supabase.auth.signInWithPassword({
@@ -119,6 +132,10 @@ export function AuthProvider({ children }: AuthProviderProps) {
   };
 
   const register = async (name: string, email: string, password: string, referralCode?: string) => {
+    if (!isSupabaseConfigured()) {
+      throw new Error('Supabase n\'est pas configuré. Veuillez connecter Supabase.');
+    }
+
     setLoading(true);
     try {
       // First, sign up the user

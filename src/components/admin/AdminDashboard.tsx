@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Users, DollarSign, TrendingUp, Activity, Search, Filter, ArrowLeft } from 'lucide-react';
-import { supabase } from '../../lib/supabase';
+import { supabase, isSupabaseConfigured } from '../../lib/supabase';
 import { useAuth } from '../../contexts/AuthContext';
 
 interface AdminUser {
@@ -37,6 +37,11 @@ export default function AdminDashboard({ onBack }: AdminDashboardProps) {
   }, []);
 
   const loadAdminData = async () => {
+    if (!isSupabaseConfigured()) {
+      setLoading(false);
+      return;
+    }
+
     try {
       setLoading(true);
 

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Mail, Lock, User, Gift, Eye, EyeOff } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
+import { isSupabaseConfigured } from '../../lib/supabase';
 
 export default function LoginForm() {
   const [isLogin, setIsLogin] = useState(true);
@@ -34,6 +35,14 @@ export default function LoginForm() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-red-600 via-red-700 to-red-800 flex items-center justify-center p-4">
       <div className="w-full max-w-md">
+        {!isSupabaseConfigured() && (
+          <div className="bg-yellow-100 border border-yellow-400 text-yellow-700 px-4 py-3 rounded-xl mb-6">
+            <p className="text-sm">
+              <strong>Configuration requise:</strong> Veuillez cliquer sur "Connect to Supabase" en haut à droite pour configurer la base de données.
+            </p>
+          </div>
+        )}
+        
         <div className="text-center mb-8">
           <div className="bg-white rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
             <Gift className="w-8 h-8 text-red-600" />

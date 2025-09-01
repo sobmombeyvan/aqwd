@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { useAuth } from './AuthContext';
-import { supabase } from '../lib/supabase';
+import { supabase, isSupabaseConfigured } from '../lib/supabase';
 
 interface Transaction {
   id: string;
@@ -43,7 +43,7 @@ export function BalanceProvider({ children }: BalanceProviderProps) {
   const [referralCount, setReferralCount] = useState(0);
 
   const refreshData = async () => {
-    if (!user) return;
+    if (!user || !isSupabaseConfigured()) return;
 
     try {
       // Load balance data
