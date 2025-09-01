@@ -23,10 +23,19 @@ export default function LoginForm() {
       if (isLogin) {
         await login(email, password);
       } else {
+        // Validate registration inputs
+        if (!name.trim()) {
+          throw new Error('Le nom est requis');
+        }
+        if (password.length < 6) {
+          throw new Error('Le mot de passe doit contenir au moins 6 caractères');
+        }
         await register(name, email, password, referralCode);
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Une erreur est survenue');
+      console.error('Auth error:', err);
+      const errorMessage = err instanceof Error ? err.message : 'Une erreur est survenue';
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }

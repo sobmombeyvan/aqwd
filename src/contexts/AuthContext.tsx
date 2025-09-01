@@ -75,13 +75,17 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
   const loadUserProfile = async (authUser: SupabaseUser) => {
     try {
+      setLoading(true);
       const { data: profile, error } = await supabase
         .from('users')
         .select('*')
         .eq('id', authUser.id)
         .single();
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error loading user profile:', error);
+        throw error;
+      }
 
       if (profile) {
         const userData: User = {
@@ -95,9 +99,13 @@ export function AuthProvider({ children }: AuthProviderProps) {
         };
         setUser(userData);
         setIsAdmin(profile.email === 'admin@cashflowa.com');
+      } else {
+        console.error('No profile found for user');
+        throw new Error('Profil utilisateur non trouvé');
       }
     } catch (error) {
       console.error('Error loading user profile:', error);
+      throw error;
     } finally {
       setLoading(false);
     }
@@ -138,43 +146,56 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
     setLoading(true);
     try {
-      // First, sign up the user
+      // First, sign up the user with email confirmation disabled
       const { data: authData, error: authError } = await supabase.auth.signUp({
         email,
         password,
+        options: {
+          emailRedirectTo: undefined, // Disable email confirmation
+        }
       });
 
       if (authError) throw authError;
+      
+      if (!authData.user) {
+        throw new Error('Échec de la création du compte');
+      }
 
-      if (authData.user) {
-        // Create user profile
-        const newReferralCode = generateReferralCode();
-        const { error: profileError } = await supabase
-          .from('users')
-          .insert({
-            id: authData.user.id,
-            email,
-            name,
-            referral_code: newReferralCode,
-            referred_by: referralCode,
-          });
+      // Create user profile
+      const newReferralCode = generateReferralCode();
+      const { error: profileError } = await supabase
+        .from('users')
+        .insert({
+          id: authData.user.id,
+          email,
+          name,
+          referral_code: newReferralCode,
+          referred_by: referralCode || null,
+        });
 
-        if (profileError) throw profileError;
+      if (profileError) {
+        console.error('Profile creation error:', profileError);
+        throw new Error('Erreur lors de la création du profil');
+      }
 
-        // Create initial balance record
-        const { error: balanceError } = await supabase
-          .from('balances')
-          .insert({
-            user_id: authData.user.id,
-            balance: 0,
-            earnings: 0,
-            referral_count: 0,
-          });
+      // Create initial balance record
+      const { error: balanceError } = await supabase
+        .from('balances')
+        .insert({
+          user_id: authData.user.id,
+          balance: 0,
+          earnings: 0,
+          referral_count: 0,
+        });
 
-        if (balanceError) throw balanceError;
+      if (balanceError) {
+        console.error('Balance creation error:', balanceError);
+        throw new Error('Erreur lors de la création du solde');
+      }
 
-        // If referred by someone, update their referral count
-        if (referralCode) {
+      // If referred by someone, update their referral count
+      if (referralCode) {
+        try {
           const { data: referrer } = await supabase
             .from('users')
             .select('id')
@@ -196,11 +217,16 @@ export function AuthProvider({ children }: AuthProviderProps) {
                 .eq('user_id', referrer.id);
             }
           }
+        } catch (referralError) {
+          console.error('Referral update error:', referralError);
+          // Don't throw here, as the main registration was successful
         }
-
-        await loadUserProfile(authData.user);
       }
+
+      // Load the user profile to set the user state
+      await loadUserProfile(authData.user);
     } catch (error) {
+      console.error('Registration error:', error);
       throw error;
     } finally {
       setLoading(false);
